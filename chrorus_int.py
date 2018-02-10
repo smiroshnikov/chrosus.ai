@@ -3,6 +3,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 # constants
+from selenium.webdriver.support import wait, ui
+from selenium.webdriver.support.wait import WebDriverWait
+
 MAC_PATH = "/Users/smiroshn/work/chromedriver/chromedriver"
 WIN_PATH = "H:\Webdrivers\chromedriver_win32\chromedriver.exe"
 CREEDENTIALS = ["automation@gmail.com", "rhrDBWT78iwU"]
@@ -18,6 +21,7 @@ class ChorusHW:
         self.url = 'https://www.chorus.ai/login'
 
     def navigate_to_login_page(self):
+        self.driver.maximize_window()
         self.driver.get(self.url)
 
     def quit(self):
@@ -47,6 +51,11 @@ class ChorusHW:
         self.driver.find_element_by_xpath("//*[contains(text(),'Automation.com')]").click()
         # self.driver.find_element_by_xpath("//*[contains(text(),"+account_name+"')]").click()
 
+    def click_hide_under_10_calls(self):
+        chorus_checkbox = WebDriverWait(self.driver, 10).until(
+            lambda x: x.find_element_by_xpath("//div[contains(@class,'chorus-checkbox')]"))
+        chorus_checkbox.click()
+
 
 if __name__ == "__main__":
     chorus = ChorusHW(DRIVER)
@@ -54,4 +63,7 @@ if __name__ == "__main__":
     chorus.login_into_chorus(CREEDENTIALS, USER_ACC_URL)
     chorus.implicit_wait(5)
     chorus.click_on_account(ACCOUNT_NAME)
+    chorus.implicit_wait(5)
+    chorus.click_hide_under_10_calls()
+
     # chorus.quit()
