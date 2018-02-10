@@ -1,19 +1,17 @@
 import time
-from threading import Thread
 
 from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support import expected_conditions as ExCon
+from selenium.webdriver.support import expected_conditions as ex_con
 from selenium.webdriver.support.wait import WebDriverWait
+import logging
 
-# constants
-
-
+# constants/globals
 MAC_PATH = "/Users/smiroshn/work/chromedriver/chromedriver"
 WIN_PATH = "H:\Webdrivers\chromedriver_win32\chromedriver.exe"
-CREEDENTIALS = ["automation@gmail.com", "rhrDBWT78iwU"]
+CREDENTIALS = ["automation@gmail.com", "rhrDBWT78iwU"]
 USER_ACC_URL = "https://chorus.ai/blueprint/205426"
 DRIVER = webdriver.WebDriver(WIN_PATH)
 ACTIONS = ActionChains(DRIVER)
@@ -64,6 +62,7 @@ class ChorusHW:
         chorus_checkbox.click()
 
     def search_transcripts(self, search_string):
+        time.sleep(2)
         search_box = self.driver.find_element_by_xpath("//input[@name='search']")
         # search_box = self.driver.find_element_by_xpath(
         #     "//div/form/input")
@@ -71,7 +70,7 @@ class ChorusHW:
         # actions = ActionChains(self.driver)
 
         AS57 = WebDriverWait(self.driver, 10).until(
-            ExCon.element_to_be_clickable((By.XPATH, "//div/h4[contains(string(), ' 57 - Automation Standup')]")))
+            ex_con.element_to_be_clickable((By.XPATH, "//div/h4[contains(string(), ' 57 - Automation Standup')]")))
         # i can get a list of those , and go for last one . not during home-task
         AS57.click()
         self.actions.move_to_element(search_box)
@@ -80,59 +79,54 @@ class ChorusHW:
         search_box.send_keys(search_string)
         search_box.send_keys(Keys.RETURN)
 
-    def get_transcript_search_results(self):
-        search_result_list = self.driver.find_elements(By.XPATH("//div/span[contains(@class,'text')]"))
+    def validate_transcript_search_results_test(self):
 
-    def parse_transcript_search_results(self, result_list):
-        top_search_results = 0
-        bottom_search_results = 0
-        web_to_string = []
-        for e in result_list:
-            web_to_string.append(e.text)
-        # for text_e in web_to_string:
-        #     print(text_e)
-        # current = ([int(s) for s in web_to_string[0].split() if s.isdigit()])[0]
-        print(top_search_results + "CURRENT!")
-        # other = ([int(s) for s in web_to_string[0].split() if s.isdigit()])[1]
-        #
-        # print(bottom_search_results + "bottom")
-        #
-        # print(f"top {current + other}")
+        """
+        Extracts all search results to an element list
+        Converts web elements to text list
+        extracts numeric values from test list
+        validates that search results on the top are equal to total number of results at the bottom
+        """
 
+        web_element_list = self.driver.find_elements_by_xpath("//div/span[contains(@class,'text')]")
+        bottom_summary = 0
+        sr = []
+        for item in web_element_list:
+            sr.append(item.text)
 
-def assert_search_results(self):
-    search_string = self.driver.find_element_by_xpath(
-        "//span[contains(@class, 'text overflow-ellipsis spring')]").text
-    search_results = {"current_meeting": ([int(s) for s in search_string.split() if s.isdigit()])[0],
-                      "other_meetings ": ([int(s) for s in search_string.split() if s.isdigit()])[1]}
+        # sr = [
+        #     '"bob" - 0 Matches in this meeting , 7 Matches in other meetings',
+        #     '1 Matches found in "1 - Call"',
+        #     '1 Matches found in "7 - Automation Standup"',
+        #     '1 Matches found in "35 - Automation Standup"',
+        #     '3 Matches found in "46 - Automation Standup"']
 
-    page_results = 6
+        if len(sr) > 0:
+            top_summary = ([int(s) for s in sr[0].split() if s.isdigit()])[0] + \
+                          ([int(s) for s in sr[0].split() if s.isdigit()])[1]
+            print(top_summary)
 
-    assert (search_results["current_meeting"] + search_results[
-        "other_meetings"]) == page_results, "invalid number of results!"
+            for i in range(1, len(sr)):
+                bottom_summary += ([int(s) for s in sr[i].split() if s.isdigit()])[0]
+            print(bottom_summary)
+            try:
+                assert top_summary == bottom_summary, "invalid number of search results"
+                passed = True
+            except AssertionError as e:
+                print(e)
+                passed = False
+        return passed
 
 
 if __name__ == "__main__":
     chorus = ChorusHW(DRIVER, ACTIONS)
     chorus.navigate_to_login_page()
-    chorus.login_into_chorus(CREEDENTIALS, USER_ACC_URL)
-    chorus.implicit_wait(5)
+    chorus.login_into_chorus(CREDENTIALS, USER_ACC_URL)
     chorus.click_on_account(ACCOUNT_NAME)
+    time.sleep(3)  # no i don't do those in real life , wasn't able to figure out what element is loaded last
     chorus.search_transcripts("bob")
-
-    RES = DRIVER.find_elements_by_xpath("//div/span[contains(@class,'text')]")
-    print(f"WHY THIS IS ZERO !!!>??!?!?! {len(RES)}")
-    for item in RES:
-        print(type(item))
-        print(str(item.text))
-
-
-    # chorus.parse_transcript_search_results(RES)
-
-    # chorus.get_transcript_search_results()
-    # chorus.assert_search_results()
-
-    # chorus.quit()
+    chorus.validate_transcript_search_results_test()
+    chorus.quit()
 
     # //div/div/div[contains(string(), "Matches in other")] crappy path but its working
 
