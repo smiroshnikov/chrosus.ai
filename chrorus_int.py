@@ -119,9 +119,14 @@ if __name__ == "__main__":
     chorus.implicit_wait(5)
     chorus.click_on_account(ACCOUNT_NAME)
     chorus.search_transcripts("bob")
-    RES = DRIVER.find_elements(By.XPATH, "//div/span[contains(@class,'text')]")
+
+    RES = DRIVER.find_elements_by_xpath("//div/span[contains(@class,'text')]")
+    print(f"WHY THIS IS ZERO !!!>??!?!?! {len(RES)}")
     for item in RES:
-        print(item.text)
+        print(type(item))
+        print(str(item.text))
+
+
     # chorus.parse_transcript_search_results(RES)
 
     # chorus.get_transcript_search_results()
