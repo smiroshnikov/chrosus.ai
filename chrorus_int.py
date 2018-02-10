@@ -73,28 +73,43 @@ class ChorusHW:
         AS57 = WebDriverWait(self.driver, 10).until(
             ExCon.element_to_be_clickable((By.XPATH, "//div/h4[contains(string(), ' 57 - Automation Standup')]")))
         # i can get a list of those , and go for last one . not during home-task
+        AS57.click()
         self.actions.move_to_element(search_box)
         self.actions.click()
         self.actions.perform()
         search_box.send_keys(search_string)
         search_box.send_keys(Keys.RETURN)
-        AS57.click()
 
     def get_transcript_search_results(self):
         search_result_list = self.driver.find_elements(By.XPATH("//div/span[contains(@class,'text')]"))
-        for e in search_result_list:
-            print(e.text)
 
-    def assert_search_results(self):
-        search_string = self.driver.find_element_by_xpath(
-            "//span[contains(@class, 'text overflow-ellipsis spring')]").text
-        search_results = {"current_meeting": ([int(s) for s in search_string.split() if s.isdigit()])[0],
-                          "other_meetings ": ([int(s) for s in search_string.split() if s.isdigit()])[1]}
+    def parse_transcript_search_results(self, result_list):
+        top_search_results = 0
+        bottom_search_results = 0
+        web_to_string = []
+        for e in result_list:
+            web_to_string.append(e.text)
+        # for text_e in web_to_string:
+        #     print(text_e)
+        # current = ([int(s) for s in web_to_string[0].split() if s.isdigit()])[0]
+        print(top_search_results + "CURRENT!")
+        # other = ([int(s) for s in web_to_string[0].split() if s.isdigit()])[1]
+        #
+        # print(bottom_search_results + "bottom")
+        #
+        # print(f"top {current + other}")
 
-        page_results = 6
 
-        assert (search_results["current_meeting"] + search_results[
-            "other_meetings"]) == page_results, "invalid number of results!"
+def assert_search_results(self):
+    search_string = self.driver.find_element_by_xpath(
+        "//span[contains(@class, 'text overflow-ellipsis spring')]").text
+    search_results = {"current_meeting": ([int(s) for s in search_string.split() if s.isdigit()])[0],
+                      "other_meetings ": ([int(s) for s in search_string.split() if s.isdigit()])[1]}
+
+    page_results = 6
+
+    assert (search_results["current_meeting"] + search_results[
+        "other_meetings"]) == page_results, "invalid number of results!"
 
 
 if __name__ == "__main__":
@@ -104,7 +119,12 @@ if __name__ == "__main__":
     chorus.implicit_wait(5)
     chorus.click_on_account(ACCOUNT_NAME)
     chorus.search_transcripts("bob")
-    chorus.get_transcript_search_results()
+    RES = DRIVER.find_elements(By.XPATH, "//div/span[contains(@class,'text')]")
+    for item in RES:
+        print(item.text)
+    # chorus.parse_transcript_search_results(RES)
+
+    # chorus.get_transcript_search_results()
     # chorus.assert_search_results()
 
     # chorus.quit()
