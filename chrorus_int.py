@@ -48,7 +48,6 @@ class ChorusHW:
         # self.driver.find_element_by_xpath("//*[contains(text(),"+account_name+"')]").click()
 
 
-
 if __name__ == "__main__":
     chorus = ChorusHW(DRIVER)
     chorus.navigate_to_login_page()
@@ -56,5 +55,3 @@ if __name__ == "__main__":
     chorus.implicit_wait(5)
     chorus.click_on_account(ACCOUNT_NAME)
     # chorus.quit()
-
-s
