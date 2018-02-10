@@ -5,11 +5,11 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions as ExCon
+from selenium.webdriver.support.wait import WebDriverWait
 
 # constants
-from selenium.webdriver.support import wait, ui
-from selenium.webdriver.support.wait import WebDriverWait
+
 
 MAC_PATH = "/Users/smiroshn/work/chromedriver/chromedriver"
 WIN_PATH = "H:\Webdrivers\chromedriver_win32\chromedriver.exe"
@@ -67,17 +67,34 @@ class ChorusHW:
         search_box = self.driver.find_element_by_xpath("//input[@name='search']")
         # search_box = self.driver.find_element_by_xpath(
         #     "//div/form/input")
-        # search_box clicking creates a selenium exception , so in order to save time used action chains
+        # search_box clicking creates a selenium exception , so in order to queue action chains
         # actions = ActionChains(self.driver)
 
-        AS = WebDriverWait(self.driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "//div/h4[contains(string(), ' 57 - Automation Standup')]")))
+        AS57 = WebDriverWait(self.driver, 10).until(
+            ExCon.element_to_be_clickable((By.XPATH, "//div/h4[contains(string(), ' 57 - Automation Standup')]")))
+        # i can get a list of those , and go for last one . not during home-task
         self.actions.move_to_element(search_box)
         self.actions.click()
         self.actions.perform()
         search_box.send_keys(search_string)
         search_box.send_keys(Keys.RETURN)
-        AS.click()
+        AS57.click()
+
+    def get_transcript_search_results(self):
+        search_result_list = self.driver.find_elements(By.XPATH("//div/span[contains(@class,'text')]"))
+        for e in search_result_list:
+            print(e.text)
+
+    def assert_search_results(self):
+        search_string = self.driver.find_element_by_xpath(
+            "//span[contains(@class, 'text overflow-ellipsis spring')]").text
+        search_results = {"current_meeting": ([int(s) for s in search_string.split() if s.isdigit()])[0],
+                          "other_meetings ": ([int(s) for s in search_string.split() if s.isdigit()])[1]}
+
+        page_results = 6
+
+        assert (search_results["current_meeting"] + search_results[
+            "other_meetings"]) == page_results, "invalid number of results!"
 
 
 if __name__ == "__main__":
@@ -87,7 +104,12 @@ if __name__ == "__main__":
     chorus.implicit_wait(5)
     chorus.click_on_account(ACCOUNT_NAME)
     chorus.search_transcripts("bob")
-
+    chorus.get_transcript_search_results()
     # chorus.assert_search_results()
 
     # chorus.quit()
+
+    # //div/div/div[contains(string(), "Matches in other")] crappy path but its working
+
+    # generally , this would be separated into few  classes , i would separate instantiation,
+    # initialization , and utility classes separately
